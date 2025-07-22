@@ -139,14 +139,41 @@ def find_preimage(original_string, max_attempts = 10000):
         total_attempts += 1
     return None, total_attempts
     
+
+
+def simulate(original_input, modified_input, preimage="No"):
+    """ 
+    AI was used for debugging
     
-original_string, attempt_count  = find_preimage("blockchain")
+    Args:
+        original_input (str): Take input from user.
+        modified_input (str): Modifed the original_image.
+        preimage (str): Ask if user want to verify the proof. 
+    """
+    original_hash = hash_data(original_input)
+    modified_hash = hash_data(modified_input)
+    hamming = hamming_distance(original_hash, modified_hash)
 
-# Execute the pre-image finding function
-print("\nTarget string:", original_string)
-print("Target hash:", original_string)
+    output = {
+        "Original input": original_input,
+        "Original hash": original_hash,
+        "Modified input": modified_input,
+        "Modified hash": modified_hash,
+        "Hamming distance": hamming
+    }
 
-user_input_password()
+    if preimage.lower() == "yes":
+        guess, attempt_count = find_preimage(original_input)
+        output["Pre-image"] = guess
+        output["Attempt count"] = attempt_count
+        output["Pre-image found"] = guess is not None
 
-# print("Pre-image found:", original_string if original_string else "Not found")
-# print("Total attempts:", attempt_count)
+    return output
+    
+#Run Simluation
+ask_user = input("Enter a random String: ")
+modifed_user = ask_user.upper()
+
+result = simulate(ask_user, modifed_user, preimage="Yes")
+for key, value in result.items():
+    print(f"{key}: {value}")

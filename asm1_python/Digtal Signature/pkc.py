@@ -12,30 +12,29 @@ AI Chatbox
 
 """
 # 1.1 Generates a public-private key pair.
-private_key = rsa.generate_private_key(
-    public_exponent=65537,  # Commonly used public exponent
-    key_size=2048,           # 2048 bits is a common key size for RSA
-)
-""" 
-Public_exponent usually refers to the exponent used in the RSA algorithm,
-which is typically a small prime number like 65537. Exponent job is to controls how the 
-message is encrypted and decrypted. while 
-Public exponent: is used in the encryption process, 
-Private exponent: is used in the decryption process.
+def generate_keys():
+    """ 
+    Public_exponent usually refers to the exponent used in the RSA algorithm,
+    which is typically a small prime number like 65537. Exponent job is to controls how the 
+    message is encrypted and decrypted. while 
+    Public exponent: is used in the encryption process, 
+    Private exponent: is used in the decryption process.
 
----------------------------------------------------------
+    ---------------------------------------------------------
 
-Key_size refers to the size of the key in bits. A larger key size generally corresponds
-to better security.
-"""
+    Key_size refers to the size of the key in bits. A larger key size generally corresponds
+    to better security.
+    """
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,  # Commonly used public exponent
+        key_size=2048,           # 2048 bits is a common key size for RSA
+    )
+    public_key = private_key.public_key() 
+    
+    return private_key, public_key
 
-# Generate public_key
-public_key = private_key.public_key() 
 
-""" 
-Generate the public key from the private key as we know that public
-key is derived from the private key.
-"""
+
 
 # 1.2 Print the public and private keys in PEM format.
 """ 
@@ -44,60 +43,66 @@ cryptographic keys and certificates.
 """
 
 # Public key in PEM format
-print("Public Key (PEM):", public_key.public_bytes(
+def pem_format_key(private_key, public_key):
+    
+    """" 
+    encoding=serialization.Encoding.PEM: Specifies that the key should be encoded in PEM format.
+    format=serialization.PublicFormat.SubjectPublicKeyInfo: Specifies the format of the public key.
+    format=serialization.PrivateFormat.TraditionalOpenSSL: Specifies the format of the private key.
+    encryption_algorithm=serialization.NoEncryption(): Specifies that the private key should not be encrypted.
+
+    ---------------------------------------------------------
+
+    Purpose of outputting the keys in PEM format: 
+    - PEM format is a widely used format for representing cryptographic keys and certificates.  
+    - Mainly to present and illustrate the public and private keys in a readable format.
+    """
+
+    pem_public_key = public_key.public_bytes(
     encoding=serialization.Encoding.PEM,
     format=serialization.PublicFormat.SubjectPublicKeyInfo
-).decode('utf-8'))
+    ).decode('utf-8')
+    
+    pem_private_key = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption()
+    ).decode('utf-8')
+    
+    return pem_private_key,pem_public_key
 
-# Private key in PEM format
-print("Private Key (PEM):", private_key.private_bytes(
-    encoding=serialization.Encoding.PEM,
-    format=serialization.PrivateFormat.TraditionalOpenSSL,
-    encryption_algorithm=serialization.NoEncryption()
-).decode('utf-8'))
 
-"""" 
-encoding=serialization.Encoding.PEM: Specifies that the key should be encoded in PEM format.
-format=serialization.PublicFormat.SubjectPublicKeyInfo: Specifies the format of the public key.
-format=serialization.PrivateFormat.TraditionalOpenSSL: Specifies the format of the private key.
-encryption_algorithm=serialization.NoEncryption(): Specifies that the private key should not be encrypted.
-
----------------------------------------------------------
-
-Purpose of outputting the keys in PEM format:
-- PEM format is a widely used format for representing cryptographic keys and certificates.  
-- Mainly to present and illustrate the public and private keys in a readable format.
-"""
 
 
 # 2. Take message as input from the user.
-message = input("Please enter enter a message: ").encode('utf8') 
-print("Message to be signed: ", message)
+def user_input():
+    """" 
+    Convert the message to bytes using utf-8 encoding.
+    This is necessary because RSA encryption works with byte data.
+    Reason: 
+    - Simply because RSA operates on byte data, and encoding ensures that the string is
+    converted to a format suitable for encryption. 
+    - Computer doesn't understand strings directly, it works with bytes.
 
-"""" 
-Convert the message to bytes using utf-8 encoding.
-This is necessary because RSA encryption works with byte data.
-Reason: 
-- Simply because RSA operates on byte data, and encoding ensures that the string is
-converted to a format suitable for encryption. 
-- Computer doesn't understand strings directly, it works with bytes.
+    """
+    message = input("Please enter enter a message: ").encode('utf8') 
+    return message
 
-"""
+
 
 # 3. Sign the message using the private key.
-real_signature = private_key.sign(message,
-    padding.PSS(
-        mgf=padding.MGF1(hashes.SHA256()),
-        salt_length=padding.PSS.MAX_LENGTH
-    ),
-    hashes.SHA256())
+def sign_message(message: bytes, private_key):
+    """Sign a message using the private key."""
+    signature = private_key.sign(
+        message,
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256()
+    )
+    return signature
 
-fake_signature = private_key.sign(b"fake message",
-    padding.PSS(
-        mgf=padding.MGF1(hashes.SHA256()),
-        salt_length=padding.PSS.MAX_LENGTH
-    ),
-    hashes.SHA256())
 
 """ 
 Sign the message using the private key and SHA-256 as its hashing algorithm.
@@ -109,7 +114,7 @@ The fake_signature is for me to demonstrate the output a different signature and
 """
 
 # 4. Verify the signature using the public key (Using the real signature).
-def get_signature(public_key, message, signature, type = "real"):
+def get_signature(public_key, message: bytes, signature: bytes, type = "real"):
     """ 
     NOTE: The format of this function, was inspired by chatGPT, as I wanted simulate both real and fake signature without having two block of similar codes, but wasn't sure how to combined them. 
     ---------------------------------------------------------
@@ -146,12 +151,39 @@ def get_signature(public_key, message, signature, type = "real"):
             ), # Used for signing and verifying the message
             hashes.SHA256()
         )
-        print(f"[{type.capitalize} Signature] Verification: Valid ")
+        return(f"[{type.capitalize} Signature] Verification: Valid ")
     except Exception:
-        print(f"[{type.capitalize} Signature] Verification: Invalid ")
+        return(f"[{type.capitalize} Signature] Verification: Invalid ")
         
-# 5. Simulate code
-get_signature(public_key, message, real_signature, type="real")
-get_signature(public_key, message, fake_signature, type="fake")
+        
+def simulate(fake_signature = "No"):
+    # Generate Public Key and Private
+    priv_key, pub_key = generate_keys()
+    pem_priv, pem_pub = pem_format_key(priv_key, pub_key)
+
+
+    # Take user input
+    message = user_input()
+    
+    #Sign message
+    real_sign = sign_message(message, priv_key)
+    
+    output = {
+        "Public Key (raw form): ": pub_key,
+        "Private Key (raw form): ": priv_key,
+        "Public Key PEM": pem_pub,
+        "Private Key PEM": pem_priv,
+        "Original Message": message.decode('utf-8'),
+        "Real Signature Verification": get_signature(pub_key, message, real_sign, type="real")
+    }
     
     
+    if fake_signature.lower() == "yes":
+        fake_msg = b"Fake Hello"
+        fake_sign = sign_message(fake_msg, priv_key)
+        output["Fake Signature Verification"] = get_signature(pub_key, message, fake_sign, type="fake")
+    return output
+
+result = simulate(fake_signature="No")
+for key, value in result.items():
+    print(f"{key}: {value}")
