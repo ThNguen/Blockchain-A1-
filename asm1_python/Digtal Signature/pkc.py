@@ -29,6 +29,7 @@ Key_size refers to the size of the key in bits. A larger key size generally corr
 to better security.
 """
 
+# Generate public_key
 public_key = private_key.public_key() 
 
 """ 
@@ -76,7 +77,7 @@ print("Message to be signed: ", message)
 """" 
 Convert the message to bytes using utf-8 encoding.
 This is necessary because RSA encryption works with byte data.
-Why?
+Reason: 
 - Simply because RSA operates on byte data, and encoding ensures that the string is
 converted to a format suitable for encryption. 
 - Computer doesn't understand strings directly, it works with bytes.
@@ -84,7 +85,7 @@ converted to a format suitable for encryption.
 """
 
 # 3. Sign the message using the private key.
-signature = private_key.sign(message,
+real_signature = private_key.sign(message,
     padding.PSS(
         mgf=padding.MGF1(hashes.SHA256()),
         salt_length=padding.PSS.MAX_LENGTH
@@ -108,28 +109,13 @@ The fake_signature is for me to demonstrate the output a different signature and
 """
 
 # 4. Verify the signature using the public key (Using the real signature).
-try:
-    public_key.verify(
-        signature,
-        message,
-        padding.PSS(
-            mgf=padding.MGF1(hashes.SHA256()),
-            salt_length=padding.PSS.MAX_LENGTH
-        ), # Used for signing and verifying the message
-        hashes.SHA256()
-    )
-    
-    # public_key.verify(
-    #     fake_signature,
-    #     message,
-    #     padding.PSS(
-    #         mgf=padding.MGF1(hashes.SHA256()),
-    #         salt_length=padding.PSS.MAX_LENGTH
-    #     ), # Used for signing and verifying the message
-    #     hashes.SHA256()
-    # )
+def get_signature(public_key, message, signature, type = "real"):
     """ 
-    Verify the signature using the public key, the original message, and the same padding and hashing algorithm.
+    NOTE: The format of this function, was inspired by chatGPT, as I wanted simulate both real and fake signature without having two block of similar codes, but wasn't sure how to combined them. 
+    ---------------------------------------------------------
+    
+    Signature verify:
+    - Verify the signature using the public key, the original message, and the same padding and hashing algorithm.
     
     PSS (Probabilistic Signature Scheme): 
     - Padding scheme for RSA signatures that provides better security.
@@ -141,11 +127,31 @@ try:
     - It is part of the PSS algorithm and is used to create a mask for the padding.
     - mgf=padding.MGF1(hashes.SHA256()) means that MGF1 is used with SHA-256 as the hash function.
     
-    The comment part is the fake_signature. It purpose to show the different ouput between a real signature and a fake signature. 
-    """
+    Testing with fake_signature():
+    - The comment part is the fake_signature. It purpose to show the different ouput between a real signature and a fake signature. 
     
-    print("Signature is valid.")
-except Exception as e:
-    print("Signature is invalid.")
+    Args:
+        public_key: Uses the generated public for verification
+        message: The message from user
+        signature: The signature that needs to validated
+        type: This will identify which type of key will be used for 
+    """
+    try:
+        public_key.verify(
+            signature,
+            message,
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH
+            ), # Used for signing and verifying the message
+            hashes.SHA256()
+        )
+        print(f"[{type.capitalize} Signature] Verification: Valid ")
+    except Exception:
+        print(f"[{type.capitalize} Signature] Verification: Invalid ")
+        
+# 5. Simulate code
+get_signature(public_key, message, real_signature, type="real")
+get_signature(public_key, message, fake_signature, type="fake")
     
     

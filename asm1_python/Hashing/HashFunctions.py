@@ -21,13 +21,28 @@ AI Chatbox
 def hash_data(data: str):
     """Hash the input data using SHA-256.
     Hashes the input data using SHA-256 and returns the hexadecimal digest
+    
+    Args: 
+        data (str): Turn input String into hash value
+    
+    Returns: 
+        str: The output will SHA-256 hash value of the inputted string
     """   
     return hashlib.sha256(data.encode('utf-8')).hexdigest()
  
  
 # Take user input and output as hash
 def user_input_password() -> str:
-    """Prompt user for input and return the hashed value."""
+    """
+    Prompt user for input and return the hashed value.
+    
+    Args: 
+        None
+    
+    Returns: 
+        str: The output is the user's inputted password, in the SHA-256 hash value form. 
+        
+    """
     
     user_input = input("Enter your data to hash: ")
     hashed_value = hash_data(user_input)
@@ -43,7 +58,13 @@ def count_hamming(hash1, hash2):
 
 # Demonstrates the avalanche effect - modified input leads to a completely different hash
 def avalanche_effect_demo():
-    """Demonstrate the avalanche effect with a slight change in input."""
+    """
+    Demonstrate the avalanche effect with a slight change in input.
+    
+    Returns: 
+        str: The output is the user's inputted password, in the SHA-256 hash value form. 
+
+    """
     original_input = input("Enter original input: ")
     modified_input = original_input.upper()  # Slight modification to the original input
 
@@ -71,6 +92,12 @@ def hamming_distance(orginal: str, modified: str) -> int:
     The differents are actually compared it in binary form so : 0s and 1s.
     So even if 1 single letter is different can also affect the hamming distance of it. 
     
+    Args:
+        orginal (str): Take in original hash value as input 
+        modified (str): Take in modified hash value as input 
+    
+    Returns:
+        int: The the total number String differences between the two. 
     """
     if len(orginal) != len(modified):
         raise ValueError("Hashes must be of the same length")
@@ -88,9 +115,6 @@ makes the cryptographic algorithm more robust against attacks, particularly stat
 
 # Demonstrate difficulty of finding a pre-image
 def find_preimage(original_string, max_attempts = 10000): 
-    total_attempts = 0
-    hashed_value = hash_data(original_string)
-    
     """
     Preimage refers to the input of a cryptogtaphic hash function that will return a specific output or hash value. 
     
@@ -100,8 +124,13 @@ def find_preimage(original_string, max_attempts = 10000):
     So for this function, it purpose is to find the orignal input that produces a specific hash output.
     The use for this is to actually determine the difficulty in the preimage. Usually it is a very long process. 
     Finding preimage is a method that miners uses for Bitcoin Mining. 
-    """
     
+    Args:
+        original_string (str): The hash data of this String is going to be our goal to find for.
+        max_attempts (int): The total number amount of time we want to search for it, with brute-force. 
+    """
+    total_attempts = 0
+    hashed_value = hash_data(original_string) 
     for _ in range(max_attempts):
         guess = ''.join(random.choices(string.ascii_letters + string.digits, k = len(original_string)))
         # Generate a random string of the same length as the original string
