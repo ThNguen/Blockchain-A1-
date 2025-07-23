@@ -114,7 +114,7 @@ The fake_signature is for me to demonstrate the output a different signature and
 """
 
 # 4. Verify the signature using the public key (Using the real signature).
-def get_signature(public_key, message: bytes, signature: bytes, type = "real"):
+def verifiy_signature(public_key, message: bytes, signature: bytes, type = "real"):
     """ 
     NOTE: The format of this function, was inspired by chatGPT, as I wanted simulate both real and fake signature without having two block of similar codes, but wasn't sure how to combined them. 
     ---------------------------------------------------------
@@ -186,14 +186,13 @@ def simulate(fake_signature = "N"):
         "Digital Signature: " : encode_real_sign, #Print digital signature, to show the PSS and MGF1
         "Digital Signature (2): " : encode_real_sign_2, #Print digital signature, to show the PSS and MGF1
         "Original Message": message.decode('utf-8'), 
-        "Real Signature Verification": get_signature(pub_key, message, real_sign, type="real")
+        "Real Signature Verification": verifiy_signature(pub_key, message, real_sign, type="real")
     }
     
      
     if fake_signature.lower() == "y":
         fake_msg = b"Fake Hello"
-        fake_sign = sign_message(fake_msg, priv_key)
-        output["Fake Signature Verification: "] = get_signature(pub_key, message, fake_sign, type="fake")
+        output["Fake Signature Verification: "] = verifiy_signature(pub_key, fake_msg, real_sign, type="fake")
     
     return output
 
