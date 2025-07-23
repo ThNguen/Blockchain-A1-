@@ -156,7 +156,7 @@ def get_signature(public_key, message: bytes, signature: bytes, type = "real"):
         return(f"[{type.capitalize} Signature] Verification: Invalid ")
         
         
-def simulate(fake_signature = "No"):
+def simulate(fake_signature = "N"):
     # Generate Public Key and Private
     priv_key, pub_key = generate_keys()
     pem_priv, pem_pub = pem_format_key(priv_key, pub_key)
@@ -165,25 +165,41 @@ def simulate(fake_signature = "No"):
     # Take user input
     message = user_input()
     
-    #Sign message
+    #Sign message - 1
     real_sign = sign_message(message, priv_key)
     
+    #Sign message - 2
+    real_sign_2 = sign_message(message, priv_key)
+    
+    #Encode the sign message for illustrate purposes -1 
+    encode_real_sign = base64.b64encode(real_sign).decode('utf-8')
+    
+    #Encode the sign message for illustrate purposes - 2
+    encode_real_sign_2 = base64.b64encode(real_sign_2).decode('utf-8')
+    
+    
     output = {
-        "Public Key (raw form): ": pub_key,
-        "Private Key (raw form): ": priv_key,
-        "Public Key PEM": pem_pub,
-        "Private Key PEM": pem_priv,
-        "Original Message": message.decode('utf-8'),
+        "Public Key (raw form): ": pub_key, #Print Public key (raw form)
+        "Private Key (raw form): ": priv_key, #Print Private Key (raw form)
+        "Public Key PEM": pem_pub, # Print Public key
+        "Private Key PEM": pem_priv, #Print Private Key
+        "Digital Signature: " : encode_real_sign, #Print digital signature, to show the PSS and MGF1
+        "Digital Signature (2): " : encode_real_sign_2, #Print digital signature, to show the PSS and MGF1
+        "Original Message": message.decode('utf-8'), 
         "Real Signature Verification": get_signature(pub_key, message, real_sign, type="real")
     }
     
-    
-    if fake_signature.lower() == "yes":
+     
+    if fake_signature.lower() == "y":
         fake_msg = b"Fake Hello"
         fake_sign = sign_message(fake_msg, priv_key)
-        output["Fake Signature Verification"] = get_signature(pub_key, message, fake_sign, type="fake")
+        output["Fake Signature Verification: "] = get_signature(pub_key, message, fake_sign, type="fake")
+    
     return output
 
-result = simulate(fake_signature="No")
+
+# Run program
+ask_input = input("Do you want to run fake signature simulation? ")
+result = simulate(fake_signature=ask_input)
 for key, value in result.items():
     print(f"{key}: {value}")
