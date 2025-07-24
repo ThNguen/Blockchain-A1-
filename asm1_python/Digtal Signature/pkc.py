@@ -222,7 +222,7 @@ def simulate(fake_signature = "N"):
 
 
 # Run program
-ask_input = input("Do you want to run fake signature simulation? ")
+ask_input = input("Do you want to run fake signature simulation? (y/n) ")
 result = simulate(fake_signature=ask_input)
 for key, value in result.items():
     print(f"{key}: {value}")
