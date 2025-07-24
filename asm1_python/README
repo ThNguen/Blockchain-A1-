@@ -1,3 +1,5 @@
 HOW TO RUN
 1. To run the code for each of the question. Just need to click the run option for each of the python file, and the code will automatically run itselfs.
 
+NOTE:
+Sometimes when you run python file, there might be a tempcode file that pops up and say some eror. All you need to do is delete the content inside the tempcode file. Then delete that temp code file, then rerun the python file.
