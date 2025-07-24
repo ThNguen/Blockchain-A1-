@@ -73,10 +73,25 @@ def pem_format_key(private_key, public_key):
 
 
 
+# 1.3 Raw form 
+def get_raw_key_values(private_key):
+    """ 
+    This function here returns the Public Key and Private Key in its Raw Form.
+    This is to compare with the PEM format to see the differences between the two. 
+    """
+    private_numbers = private_key.private_numbers()
+    public_numbers = private_numbers.public_numbers
 
+    return {
+        "Modulus (n)": public_numbers.n,
+        "Public Exponent (e)": public_numbers.e,
+        "Private Exponent (d)": private_numbers.d,
+        "Prime 1 (p)": private_numbers.p,
+        "Prime 2 (q)": private_numbers.q
+    }
 # 2. Take message as input from the user.
 def user_input():
-    """" 
+    """
     Convert the message to bytes using utf-8 encoding.
     This is necessary because RSA encryption works with byte data.
     Reason: 
@@ -161,7 +176,8 @@ def simulate(fake_signature = "N"):
     priv_key, pub_key = generate_keys()
     pem_priv, pem_pub = pem_format_key(priv_key, pub_key)
 
-
+    # Keys raw form 
+    raw_keys = get_raw_key_values(priv_key)
     # Take user input
     message = user_input()
     
@@ -179,20 +195,28 @@ def simulate(fake_signature = "N"):
     
     
     output = {
-        "Public Key (raw form): ": pub_key, #Print Public key (raw form)
-        "Private Key (raw form): ": priv_key, #Print Private Key (raw form)
-        "Public Key PEM": pem_pub, # Print Public key
-        "Private Key PEM": pem_priv, #Print Private Key
-        "Digital Signature: " : encode_real_sign, #Print digital signature, to show the PSS and MGF1
-        "Digital Signature (2): " : encode_real_sign_2, #Print digital signature, to show the PSS and MGF1
-        "Original Message": message.decode('utf-8'), 
+        "Raw Public Key Components": {
+            "Modulus (n)": raw_keys["Modulus (n)"],
+            "Public Exponent (e)": raw_keys["Public Exponent (e)"]
+        },
+        "Raw Private Key Components": {
+            "Private Exponent (d)": raw_keys["Private Exponent (d)"],
+            "Prime 1 (p)": raw_keys["Prime 1 (p)"],
+            "Prime 2 (q)": raw_keys["Prime 2 (q)"]
+        },
+        "Public Key PEM": pem_pub,
+        "Private Key PEM": pem_priv,
+        "Digital Signature (1)": encode_real_sign,
+        "Digital Signature (2)": encode_real_sign_2,
+        "Original Message": message.decode('utf-8'),
         "Real Signature Verification": verifiy_signature(pub_key, message, real_sign, type="real")
     }
+
     
      
     if fake_signature.lower() == "y":
         fake_msg = b"Fake Hello"
-        output["Fake Signature Verification: "] = verifiy_signature(pub_key, fake_msg, real_sign, type="fake")
+        output["Fake Signature Verification "] = verifiy_signature(pub_key, fake_msg, real_sign, type="fake")
     
     return output
 
